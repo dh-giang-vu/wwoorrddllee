@@ -7,14 +7,14 @@ const numCol = 5
 const wordleWord = 'react'
 
 function Wordle() {
-
-  const [gridValues, setGridValues] = useState(Array(numRow * numCol).fill(''))
+  // -1 = wrong, 1 = wordle word contains this letter in a diff position, 2 = wordle word contains this letter in the same position
+  const [gridValues, setGridValues] = useState(Array(numRow * numCol).fill(null).map(() => ({state: 0, value: ''})))
   const [letterCount, setLetterCount] = useState(0)
   const [wordCount, setWordCount] = useState(0)
   const [correctWordle, setCorrectWordle] = useState(false)
 
   const resetAllStates = () => {
-    setGridValues(Array(numRow * numCol).fill(''))
+    setGridValues(Array(numRow * numCol).fill(null).map(() => ({state: 0, value: ''})))
     setLetterCount(0)
     setWordCount(0)
     setCorrectWordle(false)
@@ -25,10 +25,10 @@ function Wordle() {
     const lowerBound = () => wordCount * numCol
     const upperBound = () => lowerBound() + numCol
     
-    function changeGridValueAt(index: Number, newValue: String) {
+    function changeGridValueAt(index: number, newValue: string) {
       const nextGridValues = gridValues.map((v, i) => {
         if (i === index) {
-          return newValue
+          return {...v, value: newValue}
         } 
         else {
           return v
@@ -37,7 +37,7 @@ function Wordle() {
       setGridValues(nextGridValues)
     }
 
-    function addNewLetter(letter: String) {
+    function addNewLetter(letter: string) {
       changeGridValueAt(letterCount, letter.toUpperCase())
       setLetterCount(letterCount => letterCount + 1)
     }
@@ -48,11 +48,47 @@ function Wordle() {
     }
 
     function submitWord() {
-      const word = gridValues.slice(letterCount-numCol, letterCount).join('').toLowerCase()
-      setWordCount(wordCount => wordCount + 1)
-      if (word === wordleWord) {
-        setCorrectWordle(true)
-      }
+      const word = gridValues.slice(letterCount-numCol, letterCount)
+        .map(x => x.value)
+        .join('')
+        .toLowerCase()
+        if (word === wordleWord) {
+          setCorrectWordle(true)
+        }
+        evaluateGuess(word.split(''))
+        setWordCount(wordCount => wordCount + 1)
+    }
+
+    function evaluateGuess(guessed: string[]) {
+      let sameposition: number[] = []
+      let diffposition: number[] = []
+
+      wordleWord.split('').map((_, i) => {
+        if (guessed[i] === wordleWord[i]) {
+          sameposition.push(lowerBound() + i)
+        }
+        else if (wordleWord.includes(guessed[i])) {
+          diffposition.push(lowerBound() + i)
+        }
+      })
+
+      const nextGridValues = gridValues.map((v, i) => {
+        if (i < lowerBound() || i >= upperBound()) {
+          return v
+        }
+        if (sameposition.length > 0 && i == sameposition[0]) {
+          sameposition = sameposition.slice(1)
+          return {...v, state: 2}
+        }
+        else if (diffposition.length > 0 && i == diffposition[0]) {
+          diffposition = diffposition.slice(1)
+          return {...v, state: 1}
+        }
+        else {
+          return {...v, state: -1}
+        }
+      })
+      setGridValues(nextGridValues)
     }
 
     function handleKeyboardInput(e: KeyboardEvent) {
@@ -80,6 +116,12 @@ function Wordle() {
     }
   })
 
+  const squareColor = (position: number) => {
+    if (gridValues[position].state === 2) return "sameposition" 
+    if (gridValues[position].state === 1) return "diffposition" 
+    if (gridValues[position].state === -1) return "wrong" 
+  }
+
   return (
     <>
       {correctWordle && <GameOverPopUp win={true}/>}
@@ -87,9 +129,9 @@ function Wordle() {
       <div className="gridContainer">
         {[...Array(numRow * numCol)].map((_, i) => {
           return (
-            <div className="square" key={i}>
+            <div className={"square " + squareColor(i)} key={i}>
               <div className="squareNumber">{i+1}</div>
-              <div className="letterDisplay">{gridValues[i]}</div>
+              <div className="letterDisplay">{gridValues[i].value}</div>
             </div>
           ) 
         })}
@@ -102,7 +144,7 @@ function Wordle() {
 function GameOverPopUp({win} : {win: Boolean}) {
   const winningText = "You've guessed it!"
   const losingText = "You've lost..."
-  const revealWordleText = "The word was"
+  const revealWordleText = "The word is"
 
   return (
     <div className="popUpContainer">

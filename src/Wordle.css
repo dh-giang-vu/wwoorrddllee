@@ -30,8 +30,24 @@
   color: bisque;
 }
 
+.square.sameposition {
+  background-color: green;
+}
+
+.square.diffposition {
+  background-color: rgb(160, 145, 13);
+}
+
+.square.wrong {
+  background-color: rgb(24, 19, 19);
+}
+
 .letterDisplay {
   font-size: 50px;
+}
+
+.square.wrong > .letterDisplay {
+  color: rgb(139, 98, 35);
 }
 
 .squareNumber {
