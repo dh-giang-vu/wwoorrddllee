@@ -1,0 +1,78 @@
+.gridContainer {
+  width: 500px;
+  height: 700px;
+  background-color: rgb(26, 43, 43);
+  border: 1px solid gainsboro;
+
+  /* Grid display */
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+
+  /* Centre div */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.square {
+  width: 100px;
+  height: 100px;
+  background-color: rgb(53, 53, 53);
+  border: 1px solid gainsboro;
+  box-sizing: border-box;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  color: bisque;
+}
+
+.letterDisplay {
+  font-size: 50px;
+}
+
+.squareNumber {
+  display: none;
+}
+
+/* =============================== */
+/* Wordle Game Over Pop Up */
+
+.popUpContainer {
+  width: 700px;
+  height: 250px;
+  background-color: rgb(53, 53, 53);
+  border: 3px solid gainsboro;
+  border-radius: 5px;
+
+  /* Centre div */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+
+  /* Centre text */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.popUpText, .wordReveal {
+  color: white;
+  font-size: 50px;
+}
+
+.highlight {
+  color: bisque;
+}
+
+.popUpInstruction {
+  color: white;
+  position: absolute;
+  bottom: 20px;
+}
