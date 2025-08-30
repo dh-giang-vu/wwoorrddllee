@@ -4,7 +4,7 @@ import './Wordle.css'
 
 const numRow = 7
 const numCol = 5
-const wordleWord = 'react'
+const defaultWordle = 'react'
 
 function Wordle() {
   // -1 = wrong, 1 = wordle word contains this letter in a diff position, 2 = wordle word contains this letter in the same position
@@ -12,12 +12,28 @@ function Wordle() {
   const [letterCount, setLetterCount] = useState(0)
   const [wordCount, setWordCount] = useState(0)
   const [correctWordle, setCorrectWordle] = useState(false)
+  const [wordleWord, setWordleWord] = useState(defaultWordle)
 
   const resetAllStates = () => {
     setGridValues(Array(numRow * numCol).fill(null).map(() => ({state: 0, value: ''})))
     setLetterCount(0)
     setWordCount(0)
     setCorrectWordle(false)
+    fetchNewWordle()
+  }
+
+  const fetchNewWordle = async () => {
+    try {
+      const response = await fetch(`https://random-words-api.kushcreates.com/api?language=en&length=${numCol}&type=lowercase&words=1`);
+      if (!response.ok) {
+        throw new Error(`${response.body}`);
+      }
+      const wordle = await response.json();
+      setWordleWord(wordle[0].word);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setWordleWord(defaultWordle)
+    }
   }
 
   useEffect(() => {
@@ -124,8 +140,8 @@ function Wordle() {
 
   return (
     <>
-      {correctWordle && <GameOverPopUp win={true}/>}
-      {!correctWordle && wordCount >= numRow && <GameOverPopUp win={false}/>}
+      {correctWordle && <GameOverPopUp win={true} wordleWord={wordleWord}/>}
+      {!correctWordle && wordCount >= numRow && <GameOverPopUp win={false} wordleWord={wordleWord}/>}
       <div className="gridContainer">
         {[...Array(numRow * numCol)].map((_, i) => {
           return (
@@ -141,7 +157,7 @@ function Wordle() {
 }
 
 // Don't judge me leave me alone asdadgfsdhgfd
-function GameOverPopUp({win} : {win: Boolean}) {
+function GameOverPopUp({win, wordleWord} : {win: Boolean, wordleWord: string}) {
   const winningText = "You've guessed it!"
   const losingText = "You've lost..."
   const revealWordleText = "The word is"
